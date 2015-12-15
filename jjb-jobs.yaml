@@ -1,0 +1,101 @@
+- job-template:
+    name: aur-package-{package}
+    defaults: aur
+    node: paveway
+    wrappers:
+      - workspace-cleanup
+    scm:
+      - git:
+          url: 'https://aur.archlinux.org/{package}.git'
+          branches:
+            - '*/master'
+          skip-tag: true
+    triggers:
+      - pollscm: "@hourly"
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            sudo pacman -Syu --noconfirm
+            makepkg --nosign --syncdeps --noconfirm
+    publishers:
+      - archive:
+          artifacts: '*.pkg.tar.xz'
+          allow-empty: 'false'
+          only-if-success: true
+      - trigger-parameterized-builds:
+          - project: 'aur-repo-add'
+            current-parameters: true
+            condition: 'SUCCESS'
+            fail-on-missing: true
+            predefined-parameters: 'package_job=${{JOB_NAME}}'
+
+- job:
+    name: 'aur-repo-add'
+    defaults: aur
+    node: paveway
+    parameters:
+        - string:
+            name: package_job
+            description: |
+              Package to add to the repo
+    builders:
+        - copyartifact:
+            project: '${package_job}'
+            filter: '*.pkg.tar.xz'
+            target: $WORKSPACE
+            which-build: last-successful
+            stable: true
+
+        - shell: |
+            #!/bin/bash -ex
+            repo-add -d -R "$WORKSPACE"/aur.db.tar.xz "$WORKSPACE"/*.pkg.tar.x
+      - archive:
+          artifacts: 'aur.db, aur.db.tar.xz, *.pkg.tar.xz'
+          allow-empty: 'false'
+          only-if-success: true
+      - trigger-parameterized-builds:
+          - project: 'aur-publish'
+            condition: 'SUCCESS'
+            trigger-with-no-params: true
+
+- job:
+    name: 'aur-publish'
+    defaults: aur
+    node: master
+    builders:
+        - copyartifact:
+            project: 'aur-repo-add'
+            target: $WORKSPACE
+            which-build: last-successful
+            stable: true
+        - shell: |
+            #!/bin/bash -ex
+            cp aur.db aur.db.tar.xz *.pkg.tar.xz /var/www/html/aur
+            echo 'to use this repo, add the following to /etc/pacman.conf:'
+            # [aur]
+            # Server = http://webhost.tld/aur/
+            # SigLevel = Never'
+
+- defaults:
+    name: aur
+    description: |
+        Managed by Jenkins Job Builder. Do not edit via web.
+    logrotate:
+        daysToKeep: -1
+        numToKeep: 10
+
+- project:
+    name: aur
+    package:
+      - devilspie2
+      - pam-krb5
+      - geteltorito
+      - qconf-git
+      - psi-plus-git
+      - psi-plus-plugins-git
+      - psi-plus-resources-git
+      - powerline-fonts-git
+      - audacious-gtk3
+      - audacious-plugins-gtk3
+    jobs:
+      - 'aur-package-{package}'
