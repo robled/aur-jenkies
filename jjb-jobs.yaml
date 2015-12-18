@@ -13,10 +13,10 @@
     triggers:
       - pollscm: "@hourly"
     builders:
-        - shell: |
-            #!/bin/bash -ex
-            sudo pacman -Syu --noconfirm
-            makepkg --nosign --syncdeps --noconfirm
+      - shell: |
+          #!/bin/bash -ex
+          sudo pacman -Syu --noconfirm
+          makepkg --nosign --syncdeps --noconfirm
     publishers:
       - archive:
           artifacts: '*.pkg.tar.xz'
@@ -34,21 +34,22 @@
     defaults: aur
     node: paveway
     parameters:
-        - string:
-            name: package_job
-            description: |
-              Package to add to the repo
+      - string:
+          name: package_job
+          description: |
+            Package to add to the repo
     builders:
-        - copyartifact:
-            project: '${package_job}'
-            filter: '*.pkg.tar.xz'
-            target: $WORKSPACE
-            which-build: last-successful
-            stable: true
+      - copyartifact:
+          project: '${package_job}'
+          filter: '*.pkg.tar.xz'
+          target: $WORKSPACE
+          which-build: last-successful
+          stable: true
 
-        - shell: |
-            #!/bin/bash -ex
-            repo-add -d -R "$WORKSPACE"/aur.db.tar.xz "$WORKSPACE"/*.pkg.tar.x
+      - shell: |
+          #!/bin/bash -ex
+          repo-add -d -R "$WORKSPACE"/aur.db.tar.xz "$WORKSPACE"/*.pkg.tar.xz
+    publishers:
       - archive:
           artifacts: 'aur.db, aur.db.tar.xz, *.pkg.tar.xz'
           allow-empty: 'false'
@@ -63,18 +64,18 @@
     defaults: aur
     node: master
     builders:
-        - copyartifact:
-            project: 'aur-repo-add'
-            target: $WORKSPACE
-            which-build: last-successful
-            stable: true
-        - shell: |
-            #!/bin/bash -ex
-            cp aur.db aur.db.tar.xz *.pkg.tar.xz /var/www/html/aur
-            echo 'to use this repo, add the following to /etc/pacman.conf:'
-            # [aur]
-            # Server = http://webhost.tld/aur/
-            # SigLevel = Never'
+      - copyartifact:
+          project: 'aur-repo-add'
+          target: $WORKSPACE
+          which-build: last-successful
+          stable: true
+      - shell: |
+          #!/bin/bash -ex
+          cp aur.db aur.db.tar.xz *.pkg.tar.xz /var/www/html/aur
+          echo 'to use this repo, add the following to /etc/pacman.conf:'
+          # [aur]
+          # Server = http://webhost.tld/aur/
+          # SigLevel = Never'
 
 - defaults:
     name: aur
@@ -97,5 +98,8 @@
       - powerline-fonts-git
       - audacious-gtk3
       - audacious-plugins-gtk3
+      - adwaita-qt
+      - thunderbird-theme-adwaita
+      - thunderbird-theme-adwaita-git
     jobs:
       - 'aur-package-{package}'
