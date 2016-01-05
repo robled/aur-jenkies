@@ -88,18 +88,6 @@
 - project:
     name: aur
     package:
-      - devilspie2
-      - pam-krb5
-      - geteltorito
-      - qconf-git
-      - psi-plus-git
-      - psi-plus-plugins-git
-      - psi-plus-resources-git
-      - powerline-fonts-git
-      - audacious-gtk3
-      - audacious-plugins-gtk3
-      - adwaita-qt
-      - thunderbird-theme-adwaita
-      - thunderbird-theme-adwaita-git
+      !include: packages.yaml.inc
     jobs:
       - 'aur-package-{package}'
