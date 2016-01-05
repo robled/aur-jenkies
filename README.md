@@ -3,7 +3,7 @@ Templates to build Arch Linux AUR packages with Jenkins
 
 ## Installation
 ```
-pip install jenkins-job-builder>=1.4.
+pip install jenkins-job-builder>=1.4
 git clone https://github.com/robled/aur-jenkies.git
 ```
 
