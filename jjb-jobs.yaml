@@ -1,6 +1,9 @@
 - job-template:
     name: aur-package-{package}
     defaults: aur
+    properties:
+      - copyartifact:
+          projects: 'aur-repo-add'
     node: paveway
     wrappers:
       - workspace-cleanup
@@ -12,6 +15,7 @@
           skip-tag: true
     triggers:
       - pollscm: "@hourly"
+      - timed: '@daily'
     builders:
       - shell: |
           #!/bin/bash -ex
@@ -32,6 +36,9 @@
 - job:
     name: 'aur-repo-add'
     defaults: aur
+    properties:
+      - copyartifact:
+          projects: 'aur-publish'
     node: paveway
     parameters:
       - string:
