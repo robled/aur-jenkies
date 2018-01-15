@@ -17,4 +17,6 @@ Create a file in the project directory named **packages.yaml.inc** and include y
 - geteltorito
 ```
 
+Optionally, use the included script `aur-packages-from-user.py` to generate it automatically.
+
 ![jenkies.png](jenkies.png "JENKIES!")
