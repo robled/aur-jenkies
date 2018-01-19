@@ -17,4 +17,6 @@ Create a file in the project directory named **packages.yaml.inc** and include y
 - geteltorito
 ```
 
+If you would like to build all packages from a particular user on the AUR, you may use the included script `aur-packages-from-user.py` to generate **packages.yaml.inc** automatically.
+
 ![jenkies.png](jenkies.png "JENKIES!")
